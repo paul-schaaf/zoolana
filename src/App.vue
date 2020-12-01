@@ -1,76 +1,69 @@
 <template>
-  <button @click="onSetup">init</button>
-  ME
-  <video ref="video" muted />
-  PEER
-  <video ref="peerVideo" />
+  <video ref="myVideo" muted></video>
+  <video ref="theirVideo"></video>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, Ref, ref } from "vue";
-
-const buildOnNegotiate = (pc: RTCPeerConnection) => {
-  return async function() {
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    console.log(Buffer.from(pc.localDescription?.sdp as string));
-    console.log(pc.localDescription?.sdp.toString());
-  };
-};
-
-function handleAnswer(message: string, pc: Ref<RTCPeerConnection>) {
-  const desc = new RTCSessionDescription({ sdp: message, type: "answer" });
-  pc.value.setRemoteDescription(desc).catch(e => console.log(e));
-}
-
-const createPC = (
-  myVideo: Ref<HTMLVideoElement>,
-  peerVideo: Ref<HTMLVideoElement>
-) => {
-  const peer = new RTCPeerConnection();
-  peer.ontrack = (event: RTCTrackEvent) => {
-    peerVideo.value!.srcObject = event.streams[0];
-  };
-  peer.onnegotiationneeded = buildOnNegotiate(peer);
-  (myVideo.value.srcObject as MediaStream).getTracks().forEach(t => {
-    console.log(t);
-    peer.addTrack(t, myVideo.value.srcObject as MediaStream);
-  });
-  return peer;
-};
+import SimplePeer from "simple-peer";
 
 export default defineComponent({
   name: "App",
   setup() {
-    const constraints = { audio: true, video: { width: 450, height: 360 } };
-    const video: Ref<null | HTMLVideoElement> = ref(null);
-    const peerVideo: Ref<null | HTMLVideoElement> = ref(null);
+    const myVideo = ref();
+    const theirVideo = ref();
 
-    onMounted(async () => {
-      if (!video.value) {
-        return;
-      }
-      video.value.srcObject = await navigator.mediaDevices.getUserMedia(
-        constraints
-      );
-      video.value.onloadedmetadata = function() {
-        video.value!.play();
-      };
-    });
+    function gotMedia(stream: MediaStream) {
+      const peer1 = new SimplePeer({ initiator: true, stream: stream });
+      const peer2 = new SimplePeer({stream: stream});
 
-    const peerConnection: Ref<null | RTCPeerConnection> = ref(null);
+      peer1.on("signal", data => {
+        console.log("signal from P2:");
+        console.log(Buffer.from(JSON.stringify(data)));
+        peer2.signal(Buffer.from(JSON.stringify(data)).toString());
+      });
 
-    const onSetup = () => {
-      if (!video.value) {
-        return;
-      }
-      peerConnection.value = createPC(
-        video as Ref<HTMLVideoElement>,
-        peerVideo as Ref<HTMLVideoElement>
-      );
-    };
+      peer2.on("signal", data => {
+        console.log("signal from P1:");
+        console.log(Buffer.from(JSON.stringify(data)));
+        peer1.signal(Buffer.from(JSON.stringify(data)).toString());
+      });
 
-    return { video, onSetup, peerVideo };
+      peer1.on("stream", stream => {
+                const video = theirVideo.value;
+        video.srcObject = stream;
+
+        video.play();
+      })
+
+      peer2.on("stream", stream => {
+        // got remote video stream, now let's show it in a video tag
+        const video = myVideo.value;
+        video.srcObject = stream;
+
+        video.play();
+      });
+    }
+    // get video/voice stream
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+        audio: true
+      })
+      .then(gotMedia)
+      .catch(err => {
+        console.error(err);
+      });
+
+    return { myVideo, theirVideo };
   }
 });
 </script>
+
+<style lang="scss" scoped>
+#outgoing {
+  width: 600px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+</style>
