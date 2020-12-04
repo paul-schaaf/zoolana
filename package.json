@@ -2,12 +2,16 @@
   "name": "zoolana",
   "version": "0.1.0",
   "private": true,
+  "testnetDefaultChannel": "v1.4.4",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "localnet:up": "set -x; solana-localnet down; set -e; RUST_LOG=solana_runtime::system_instruction_processor=trace,solana_runtime::message_processor=info,solana_bpf_loader=debug,solana_rbpf=debug solana-localnet up",
+    "localnet:logs": "solana-localnet logs -f"
   },
   "dependencies": {
+    "@solana/web3.js": "^0.87.1",
     "core-js": "^3.6.5",
     "simple-peer": "^9.9.3",
     "vue": "^3.0.0"

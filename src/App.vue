@@ -1,21 +1,29 @@
 <template>
-  <video ref="myVideo" muted></video>
-  <video ref="theirVideo"></video>
+  <!-- <video ref="myVideo" muted></video>
+  <video ref="theirVideo"></video> -->
+  <div @click="onClick" style="cursor:pointer">press me</div>
+  <div>{{ info }}</div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, Ref, ref } from "vue";
 import SimplePeer from "simple-peer";
+import { writeMessage } from "./util";
+import { write } from "fs";
 
 export default defineComponent({
   name: "App",
   setup() {
-    const myVideo = ref();
+/*     const myVideo = ref();
     const theirVideo = ref();
 
     function gotMedia(stream: MediaStream) {
-      const peer1 = new SimplePeer({ initiator: true, stream: stream });
-      const peer2 = new SimplePeer({stream: stream});
+      const peer1 = new SimplePeer({ initiator: true, stream });
+      const peer2 = new SimplePeer({ stream });
+      
+      // connection.onAccountChange(pubkey, () => {
+      //  peer1.signal(adasd)
+      //})
 
       peer1.on("signal", data => {
         console.log("signal from P2:");
@@ -30,9 +38,9 @@ export default defineComponent({
       });
 
       peer1.on("stream", stream => {
-                const video = theirVideo.value;
+        const video = theirVideo.value;
         video.srcObject = stream;
-
+        console.log(stream);
         video.play();
       })
 
@@ -40,7 +48,7 @@ export default defineComponent({
         // got remote video stream, now let's show it in a video tag
         const video = myVideo.value;
         video.srcObject = stream;
-
+        console.log(stream);
         video.play();
       });
     }
@@ -53,9 +61,14 @@ export default defineComponent({
       .then(gotMedia)
       .catch(err => {
         console.error(err);
-      });
+      }); */
+      const info = ref("");
+      const onClick = async () => {
+        //@ts-expect-error
+        info.value = await writeMessage();
+      }
 
-    return { myVideo, theirVideo };
+      return { info, onClick };
   }
 });
 </script>
