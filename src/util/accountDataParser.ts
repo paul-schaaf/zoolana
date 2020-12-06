@@ -28,7 +28,7 @@ export class AccountDataParser extends EventEmitter{
         this.#ongoingSignals = [];
         this.#connection = connection;
         this.#accountPubkey = accountPubkey;
-        this.#connection.onAccountChange(this.#accountPubkey, this.handleAccountChange, 'singleGossip');
+        this.#connection.onAccountChange(this.#accountPubkey, this.handleAccountChange.bind(this), 'singleGossip');
         this.#senderId = senderId;
     }
 
@@ -37,7 +37,7 @@ export class AccountDataParser extends EventEmitter{
 
         let i = 0;
         while (accountData[i] !== 0) {
-                const currentMessageLength = new BN(accountData[i + 4], accountData[i + 5], "le").toNumber();
+                const currentMessageLength = new BN([accountData[i + 4], accountData[i + 5]], "le").toNumber();
 
                 if (accountData[i] !== this.#senderId) {
                     const message: Message = {
@@ -64,9 +64,7 @@ export class AccountDataParser extends EventEmitter{
                        this.emit("signal", message.toString());
                     } 
                 }
-
                 i += currentMessageLength + 6;
-            
         }
     }
 }
