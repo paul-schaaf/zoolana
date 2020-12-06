@@ -68,6 +68,5 @@ export class AccountDataParser extends EventEmitter{
                 i += currentMessageLength + 6;
             
         }
-        this.emit("hi");
     }
 }
