@@ -1,5 +1,9 @@
-
-import { Account, Connection, sendAndConfirmTransaction as realSendAndConfirmTransaction, Transaction } from "@solana/web3.js";
+import {
+  Account,
+  Connection,
+  sendAndConfirmTransaction as realSendAndConfirmTransaction,
+  Transaction
+} from "@solana/web3.js";
 
 export async function sendAndConfirmTransaction(
   connection: Connection,
@@ -7,8 +11,6 @@ export async function sendAndConfirmTransaction(
   ...signers: Account[]
 ) {
   await realSendAndConfirmTransaction(connection, transaction, signers, {
-    skipPreflight: true,
-    commitment: "singleGossip",
-    preflightCommitment: undefined,
+    skipPreflight: true
   });
 }
