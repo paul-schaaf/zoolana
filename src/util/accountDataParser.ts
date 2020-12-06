@@ -61,7 +61,7 @@ export class AccountDataParser extends EventEmitter{
                        signal.messages.sort((m1,m2) => m1.messagePartId < m2.messagePartId ? -1 : 1);
                        const message = Buffer.concat(signal.messages.map(m => Buffer.from(m.message)));
                        this.#ongoingSignals = this.#ongoingSignals.filter(s => s.signalId !== signal?.signalId);
-                       this.emit("signal", message);
+                       this.emit("signal", message.toString());
                     } 
                 }
 
