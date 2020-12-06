@@ -150,6 +150,10 @@ export class SignalSender {
         "singleGossip"
       );
     }
+    
+    getAccKey() {
+      return this.#connectionAccount.publicKey;
+    }
 
     getSecret() {
       return base58.encode(this.#connectionAccount.secretKey);
