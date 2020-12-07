@@ -75,7 +75,6 @@ export class SignalSender {
     async sendSignal(signal: string) {
         this.#signalCounter += 1;
         const mySignalId = this.#signalCounter;
-        console.log("Sending signal with id: ", mySignalId);
         const signalBuffer = Buffer.from(signal);
 
         if (signalBuffer.length < 901) {
@@ -107,7 +106,6 @@ export class SignalSender {
               this.#connectionAccount
             );
           } else {
-            try {
               const splitSignalBuffer = chunk([...signalBuffer], 900);
               splitSignalBuffer.forEach(async (v, index) => {
                 const data = Buffer.concat([
@@ -138,9 +136,6 @@ export class SignalSender {
                   this.#connectionAccount
                 );
               });
-            } catch (err) {
-              console.log("Offer tx failed");
-            }
           }
     }
 

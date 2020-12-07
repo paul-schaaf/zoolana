@@ -1,8 +1,11 @@
-export const chunk: <T extends Array<any>>(arr: T, perChunk: number) => T[] = (
+export const chunk: <T>(arr: T[], perChunk: number) => T[][] = (
   arr,
   perChunk
-) =>
-  arr.reduce((resultArray: any[], item, index) => {
+) => {
+  type T = typeof arr[0];
+  const initial: T[][] = [];
+
+  return arr.reduce((resultArray: T[][], item, index) => {
     const chunkIndex = Math.floor(index / perChunk);
 
     if (!resultArray[chunkIndex]) {
@@ -12,4 +15,5 @@ export const chunk: <T extends Array<any>>(arr: T, perChunk: number) => T[] = (
     resultArray[chunkIndex].push(item);
 
     return resultArray;
-  }, []);
+  }, initial);
+};

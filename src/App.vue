@@ -6,10 +6,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref, ref } from "vue";
+import { defineComponent, ref } from "vue";
 import SimplePeer from "simple-peer";
 import { SignalSender } from "./util/signalSender";
-import { sleep } from "./util/sleep";
+import { AccountDataParser } from "./util/accountDataParser";
 import { Connection } from "@solana/web3.js";
 
 export default defineComponent({
@@ -19,13 +19,23 @@ export default defineComponent({
     const theirVideo = ref();
     const info = ref("");
 
-    function gotMedia(stream: MediaStream, signalSender: SignalSender) {
+    function gotMedia(
+      stream: MediaStream,
+      signalSender: SignalSender,
+      theirSignalSender: SignalSender,
+      accountDataParser: AccountDataParser,
+      theirAccountDataParser: AccountDataParser
+    ) {
       const peer1 = new SimplePeer({ initiator: true, stream });
       const peer2 = new SimplePeer({ stream });
 
+      accountDataParser.on("signal", data => peer1.signal(JSON.parse(data)));
+      theirAccountDataParser.on("signal", data =>
+        peer2.signal(JSON.parse(data))
+      );
+
       peer1.on("signal", data => {
         signalSender.sendSignal(JSON.stringify(data));
-        peer2.signal(Buffer.from(JSON.stringify(data)).toString());
       });
 
       peer1.on("connect", async () => {
@@ -35,7 +45,7 @@ export default defineComponent({
       });
 
       peer2.on("signal", data => {
-        peer1.signal(Buffer.from(JSON.stringify(data)).toString());
+        theirSignalSender.sendSignal(JSON.stringify(data));
       });
 
       peer1.on("stream", stream => {
@@ -58,6 +68,23 @@ export default defineComponent({
         "singleGossip"
       );
       const signalSender = await SignalSender.new(connection, 1);
+      const theirSignalSender = await SignalSender.newWithAddress(
+        connection,
+        2,
+        signalSender.getSecret()
+      );
+
+      const accountDataParser = new AccountDataParser(
+        connection,
+        signalSender.getAccKey(),
+        1
+      );
+
+      const theirAccountDataParser = new AccountDataParser(
+        connection,
+        signalSender.getAccKey(),
+        2
+      );
 
       // get video/voice stream
       navigator.mediaDevices
@@ -65,7 +92,15 @@ export default defineComponent({
           video: true,
           audio: true
         })
-        .then(stream => gotMedia(stream, signalSender))
+        .then(stream =>
+          gotMedia(
+            stream,
+            signalSender,
+            theirSignalSender,
+            accountDataParser,
+            theirAccountDataParser
+          )
+        )
         .catch(err => {
           console.error(err);
         });
