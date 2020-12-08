@@ -1,7 +1,8 @@
 <template>
-  <video ref="myVideo" muted></video>
-  <video ref="theirVideo"></video>
-  <div @click="onClick" style="cursor:pointer">establish connection</div>
+  <video ref="myVideo"></video>
+  <div @click="createRoom" style="cursor:pointer">Create room</div>
+  <input v-model="accountSecret" type="text" />
+  <div @click="joinRoom(accountSecret)" style="cursor:pointer">Join room</div>
   <div>{{ info }}</div>
 </template>
 
@@ -10,103 +11,102 @@ import { defineComponent, ref } from "vue";
 import SimplePeer from "simple-peer";
 import { SignalSender } from "./util/signalSender";
 import { AccountDataParser } from "./util/accountDataParser";
-import { clusterApiUrl, Connection } from "@solana/web3.js";
+import { Account, clusterApiUrl, Connection } from "@solana/web3.js";
+import bs58 from "bs58";
 
 export default defineComponent({
   name: "App",
   setup() {
     const myVideo = ref();
-    const theirVideo = ref();
     const info = ref("");
+    const accountSecret = ref("");
 
-    function gotMedia(
-      stream: MediaStream,
-      signalSender: SignalSender,
-      theirSignalSender: SignalSender,
-      accountDataParser: AccountDataParser,
-      theirAccountDataParser: AccountDataParser
-    ) {
-      const peer1 = new SimplePeer({ initiator: true, stream });
-      const peer2 = new SimplePeer({ stream });
+    async function createRoom() {
+      const connection = new Connection(
+        clusterApiUrl("devnet"),
+        "singleGossip"
+      );
+      const account = new Account();
 
-      accountDataParser.on("signal", data => peer1.signal(JSON.parse(data)));
-      theirAccountDataParser.on("signal", data =>
-        peer2.signal(JSON.parse(data))
+      console.log(bs58.encode(account.secretKey));
+
+      const signalSender = await SignalSender.newWithAccount(
+        connection,
+        1,
+        account
       );
 
-      peer1.on("signal", data => {
+      const accountDataParser = new AccountDataParser(
+        connection,
+        account.publicKey,
+        1
+      );
+
+      // get video/voice stream
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+
+      const peer = new SimplePeer({ stream });
+
+      accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
+
+      peer.on("signal", data => {
         signalSender.sendSignal(JSON.stringify(data));
       });
 
-      peer1.on("connect", async () => {
-        console.log("connected");
-        //@ts-expect-error
-        info.value = await signalSender.getAccInfo();
-      });
-
-      peer2.on("signal", data => {
-        theirSignalSender.sendSignal(JSON.stringify(data));
-      });
-
-      peer1.on("stream", stream => {
-        const video = theirVideo.value;
-        video.srcObject = stream;
-        video.play();
-      });
-
-      peer2.on("stream", stream => {
-        // got remote video stream, now let's show it in a video tag
+      peer.on("stream", stream => {
         const video = myVideo.value;
         video.srcObject = stream;
         video.play();
       });
     }
 
-    const onClick = async () => {
+    async function joinRoom(secret: string) {
+      console.log("Join Room!");
+
       const connection = new Connection(
         clusterApiUrl("devnet"),
         "singleGossip"
       );
-      const signalSender = await SignalSender.new(connection, 1);
-      const theirSignalSender = await SignalSender.newWithAddress(
+
+      const account = new Account(bs58.decode(secret));
+
+      const signalSender = await SignalSender.newWithAccount(
         connection,
         2,
-        signalSender.getSecret()
+        account
       );
 
       const accountDataParser = new AccountDataParser(
         connection,
-        signalSender.getAccKey(),
-        1
-      );
-
-      const theirAccountDataParser = new AccountDataParser(
-        connection,
-        signalSender.getAccKey(),
+        account.publicKey,
         2
       );
 
       // get video/voice stream
-      navigator.mediaDevices
-        .getUserMedia({
-          video: true,
-          audio: true
-        })
-        .then(stream =>
-          gotMedia(
-            stream,
-            signalSender,
-            theirSignalSender,
-            accountDataParser,
-            theirAccountDataParser
-          )
-        )
-        .catch(err => {
-          console.error(err);
-        });
-    };
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
 
-    return { info, onClick, theirVideo, myVideo };
+      const peer = new SimplePeer({ stream });
+
+      accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
+
+      peer.on("signal", data => {
+        signalSender.sendSignal(JSON.stringify(data));
+      });
+
+      peer.on("stream", stream => {
+        const video = myVideo.value;
+        video.srcObject = stream;
+        video.play();
+      });
+    }
+
+    return { info, createRoom, joinRoom, accountSecret, myVideo };
   }
 });
 </script>

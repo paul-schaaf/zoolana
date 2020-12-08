@@ -53,15 +53,20 @@ export class SignalSender {
     }
 
   static async newWithAddress(connection: Connection, senderId: number, connectionAccountSecret: string) {
-      const signalSender = new SignalSender(connection, senderId);
-      signalSender.#connectionAccount = await createAccount(connectionAccountSecret);
+      const account = await createAccount(connectionAccountSecret);
+      return this.newWithAccount(connection, senderId, account);
+    }
 
-      signalSender.#masterAcc = await newAccountWithLamports(
-        connection,
-        10 * LAMPORTS_PER_SOL
-      );
-      
-      return signalSender;
+    static async newWithAccount(connection: Connection, senderId: number, connectionAccount: Account) {
+        const signalSender = new SignalSender(connection, senderId);
+        signalSender.#connectionAccount = connectionAccount;
+
+        signalSender.#masterAcc = await newAccountWithLamports(
+            connection,
+            10 * LAMPORTS_PER_SOL
+        );
+
+        return signalSender;
     }
 
     private constructor(connection: Connection, senderId: number) {
