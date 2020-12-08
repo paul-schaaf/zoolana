@@ -29,7 +29,6 @@ export default defineComponent({
       const account = new Account();
 
       console.log(bs58.encode(account.secretKey));
-
       const signalSender = await SignalSender.newWithAccount(
         connection,
         1,
@@ -79,6 +78,8 @@ export default defineComponent({
         account
       );
 
+      await signalSender.createConnectionAccount();
+
       const accountDataParser = new AccountDataParser(
         connection,
         account.publicKey,
@@ -91,7 +92,7 @@ export default defineComponent({
         audio: true
       });
 
-      const peer = new SimplePeer({ stream });
+      const peer = new SimplePeer({ stream, initiator: true });
 
       accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
 

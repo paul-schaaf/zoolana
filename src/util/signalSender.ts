@@ -52,7 +52,7 @@ export class SignalSender {
           return signalSender;
     }
 
-  static async newWithAddress(connection: Connection, senderId: number, connectionAccountSecret: string) {
+    static async newWithAddress(connection: Connection, senderId: number, connectionAccountSecret: string) {
       const account = await createAccount(connectionAccountSecret);
       return this.newWithAccount(connection, senderId, account);
     }
@@ -67,6 +67,23 @@ export class SignalSender {
         );
 
         return signalSender;
+    }
+
+    createConnectionAccount() {
+      const connectionAccountIx = SystemProgram.createAccount({
+        fromPubkey: this.#masterAcc.publicKey,
+        newAccountPubkey: this.#connectionAccount.publicKey,
+        lamports: 2 * LAMPORTS_PER_SOL,
+        space: 20000,
+        programId: PROGRAM_ID
+      });
+  
+       return sendAndConfirmTransaction(
+        this.#connection,
+        new Transaction().add(connectionAccountIx),
+        this.#masterAcc,
+        this.#connectionAccount
+      );
     }
 
     private constructor(connection: Connection, senderId: number) {
