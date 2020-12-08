@@ -10,7 +10,7 @@ import { defineComponent, ref } from "vue";
 import SimplePeer from "simple-peer";
 import { SignalSender } from "./util/signalSender";
 import { AccountDataParser } from "./util/accountDataParser";
-import { Connection } from "@solana/web3.js";
+import { clusterApiUrl, Connection } from "@solana/web3.js";
 
 export default defineComponent({
   name: "App",
@@ -64,7 +64,7 @@ export default defineComponent({
 
     const onClick = async () => {
       const connection = new Connection(
-        "http://localhost:8899",
+        clusterApiUrl("devnet"),
         "singleGossip"
       );
       const signalSender = await SignalSender.new(connection, 1);
