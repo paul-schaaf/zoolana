@@ -2,7 +2,9 @@
   <video ref="myVideo"></video>
   <div @click="createRoom" style="cursor:pointer">Create room</div>
   <input v-model="accountSecret" type="text" />
-  <div @click="joinRoom(accountSecret)" style="cursor:pointer">Join room</div>
+  <button @click="joinRoom(accountSecret)" style="cursor:pointer">
+    Join room
+  </button>
   <div>{{ info }}</div>
 </template>
 
@@ -23,7 +25,7 @@ export default defineComponent({
 
     async function createRoom() {
       const connection = new Connection(
-        clusterApiUrl("devnet"),
+        "http://localhost:8899",
         "singleGossip"
       );
       const account = new Account();
@@ -35,11 +37,7 @@ export default defineComponent({
         account
       );
 
-      const accountDataParser = new AccountDataParser(
-        connection,
-        account.publicKey,
-        1
-      );
+      const accountDataParser = new AccountDataParser(connection, account, 1);
 
       // get video/voice stream
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -66,7 +64,7 @@ export default defineComponent({
       console.log("Join Room!");
 
       const connection = new Connection(
-        clusterApiUrl("devnet"),
+        "http://localhost:8899",
         "singleGossip"
       );
 
@@ -80,11 +78,7 @@ export default defineComponent({
 
       await signalSender.createConnectionAccount();
 
-      const accountDataParser = new AccountDataParser(
-        connection,
-        account.publicKey,
-        2
-      );
+      const accountDataParser = new AccountDataParser(connection, account, 2);
 
       // get video/voice stream
       const stream = await navigator.mediaDevices.getUserMedia({
