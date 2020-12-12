@@ -91,7 +91,7 @@ export default defineComponent({
       if (stream) {
         stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0]
           .enabled;
-        isMuted.value = stream.getAudioTracks()[0].enabled;
+        isMuted.value = !stream.getAudioTracks()[0].enabled;
       }
     };
 
