@@ -89,7 +89,7 @@ export default defineComponent({
 
     async function createRoom() {
       const connection = new Connection(
-        "http://localhost:8899",
+        clusterApiUrl("devnet"),
         "singleGossip"
       );
       const account = new Account();
@@ -128,7 +128,7 @@ export default defineComponent({
       console.log("Join Room!");
 
       const connection = new Connection(
-        "http://localhost:8899",
+        clusterApiUrl("devnet"),
         "singleGossip"
       );
 
