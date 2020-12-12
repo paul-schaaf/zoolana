@@ -1,5 +1,51 @@
 <template>
-  <video ref="myVideo"></video>
+  <div class="container bg-red-100 flex justify-center">
+    <div class="mt-10 w-2/3 bg-blue-200 flex flex-col items-center">
+      <h1 class="text-4xl">Zoolana</h1>
+      <h2 class="text-xl mt-10">RoomId: {{ roomId }}</h2>
+      <div class="w-4/5 mt-10">
+        <div
+          style="height: 550px"
+          class="flex flex-col items-center bg-red-400 w-full relative"
+        >
+          <video
+            ref="theirVideo"
+            class="w-full h-full bg-red-500"
+            style="object-fit: cover;"
+          ></video>
+          <video
+            ref="myVideo"
+            class="w-48 absolute bg-blue-400 bottom-5 right-5"
+            style="object-fit: cover;"
+          ></video>
+        </div>
+      </div>
+      <div class="w-1/3">
+        <div class="mt-10 flex justify-around">
+          <div
+            class="h-20 w-20 bg-gray-400 rounded-full relative cursor-pointer"
+          >
+            <img
+              src="./assets/icons/mic-off.svg"
+              alt="end call"
+              class="absolute top-7 left-7"
+            />
+          </div>
+          <div
+            class="h-20 w-20 bg-gray-400 rounded-full relative cursor-pointer"
+            @click="endCall"
+          >
+            <img
+              src="./assets/icons/phone-missed.svg"
+              alt="end call"
+              class="absolute"
+              style="top: 1.85rem; left: 1.6rem"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div @click="createRoom" style="cursor:pointer">Create room</div>
   <input v-model="accountSecret" type="text" />
   <div @click="joinRoom(accountSecret)" style="cursor:pointer">Join room</div>
@@ -7,7 +53,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 import SimplePeer from "simple-peer";
 import { SignalSender } from "./util/signalSender";
 import { AccountDataParser } from "./util/accountDataParser";
@@ -18,8 +64,26 @@ export default defineComponent({
   name: "App",
   setup() {
     const myVideo = ref();
+    const theirVideo = ref();
     const info = ref("");
     const accountSecret = ref("");
+    const roomId = ref("fsdlkfhjdsfhsadlkfhasdlfldhfs");
+    let peer: SimplePeer.Instance;
+
+    const endCall = () => {
+     if (peer) {
+       peer.destroy();
+     }
+    };
+
+    onMounted(async () => {
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: true
+      });
+      const video = myVideo.value;
+      video.srcObject = videoStream;
+      video.play();
+    });
 
     async function createRoom() {
       const connection = new Connection(
@@ -47,7 +111,7 @@ export default defineComponent({
         audio: true
       });
 
-      const peer = new SimplePeer({ stream });
+      peer = new SimplePeer({ stream });
 
       accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
 
@@ -56,7 +120,7 @@ export default defineComponent({
       });
 
       peer.on("stream", stream => {
-        const video = myVideo.value;
+        const video = theirVideo.value;
         video.srcObject = stream;
         video.play();
       });
@@ -92,7 +156,7 @@ export default defineComponent({
         audio: true
       });
 
-      const peer = new SimplePeer({ stream, initiator: true });
+      peer = new SimplePeer({ stream, initiator: true });
 
       accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
 
@@ -101,13 +165,22 @@ export default defineComponent({
       });
 
       peer.on("stream", stream => {
-        const video = myVideo.value;
+        const video = theirVideo.value;
         video.srcObject = stream;
         video.play();
       });
     }
 
-    return { info, createRoom, joinRoom, accountSecret, myVideo };
+    return {
+      info,
+      createRoom,
+      joinRoom,
+      accountSecret,
+      myVideo,
+      theirVideo,
+      roomId,
+      endCall
+    };
   }
 });
 </script>
