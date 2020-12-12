@@ -2,7 +2,9 @@
   <div class="container bg-red-100 flex justify-center">
     <div class="mt-10 w-2/3 bg-blue-200 flex flex-col items-center">
       <h1 class="text-4xl">Zoolana</h1>
-      <h2 class="text-xl mt-10">RoomId: {{ roomId }}</h2>
+      <h2 class="text-xl mt-10 cursor-pointer" @click="copyRoomSecret">
+        Copy Room Secret
+      </h2>
       <div class="w-4/5 mt-10">
         <div
           style="height: 550px"
@@ -68,6 +70,7 @@ import { SignalSender } from "./util/signalSender";
 import { AccountDataParser } from "./util/accountDataParser";
 import { Account, clusterApiUrl, Connection } from "@solana/web3.js";
 import bs58 from "bs58";
+import copy from "copy-to-clipboard";
 
 export default defineComponent({
   name: "App",
@@ -76,10 +79,14 @@ export default defineComponent({
     const theirVideo = ref();
     const info = ref("");
     const accountSecret = ref("");
-    const roomId = ref("fsdlkfhjdsfhsadlkfhasdlfldhfs");
+    const roomId = ref("");
     let peer: SimplePeer.Instance;
     let stream: MediaStream;
     const isMuted = ref(false);
+
+    const copyRoomSecret = () => {
+      copy(roomId.value);
+    };
 
     const endCall = () => {
       if (peer) {
@@ -111,7 +118,7 @@ export default defineComponent({
       );
       const account = new Account();
 
-      console.log(bs58.encode(account.secretKey));
+      roomId.value = bs58.encode(account.secretKey);
       const signalSender = await SignalSender.newWithAccount(
         connection,
         1,
@@ -146,7 +153,8 @@ export default defineComponent({
     }
 
     async function joinRoom(secret: string) {
-      console.log("Join Room!");
+      console.log("Joining Room!");
+      roomId.value = secret;
 
       const connection = new Connection(
         clusterApiUrl("devnet"),
@@ -197,7 +205,7 @@ export default defineComponent({
       accountSecret,
       myVideo,
       theirVideo,
-      roomId,
+      copyRoomSecret,
       endCall,
       toggleMic,
       isMuted
