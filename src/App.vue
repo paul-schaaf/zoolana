@@ -24,6 +24,7 @@
         <div class="mt-10 flex justify-around">
           <div
             class="h-20 w-20 bg-gray-400 rounded-full relative cursor-pointer"
+            @click="toggleMic"
           >
             <img
               src="./assets/icons/mic-off.svg"
@@ -69,11 +70,19 @@ export default defineComponent({
     const accountSecret = ref("");
     const roomId = ref("fsdlkfhjdsfhsadlkfhasdlfldhfs");
     let peer: SimplePeer.Instance;
+    let stream: MediaStream;
 
     const endCall = () => {
-     if (peer) {
-       peer.destroy();
-     }
+      if (peer) {
+        peer.destroy();
+      }
+    };
+
+    const toggleMic = () => {
+      if (stream) {
+        stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0]
+          .enabled;
+      }
     };
 
     onMounted(async () => {
@@ -106,7 +115,7 @@ export default defineComponent({
       );
 
       // get video/voice stream
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
@@ -151,7 +160,7 @@ export default defineComponent({
       );
 
       // get video/voice stream
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
@@ -179,7 +188,8 @@ export default defineComponent({
       myVideo,
       theirVideo,
       roomId,
-      endCall
+      endCall,
+      toggleMic
     };
   }
 });
