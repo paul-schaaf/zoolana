@@ -30,13 +30,13 @@
             <img
               v-if="isMuted"
               src="./assets/icons/mic-off.svg"
-              alt="end call"
+              alt="unmute"
               class="absolute top-7 left-7"
             />
             <img
               v-else
               src="./assets/icons/mic.svg"
-              alt="end call"
+              alt="mute"
               class="absolute top-7 left-7"
             />
           </div>
