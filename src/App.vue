@@ -23,11 +23,19 @@
       <div class="w-1/3">
         <div class="mt-10 flex justify-around">
           <div
-            class="h-20 w-20 bg-gray-400 rounded-full relative cursor-pointer"
+            class="h-20 w-20 bg-gray-400 rounded-full relative cursor-pointer transition-colors"
+            :class="{ 'bg-gray-700': isMuted }"
             @click="toggleMic"
           >
             <img
+              v-if="isMuted"
               src="./assets/icons/mic-off.svg"
+              alt="end call"
+              class="absolute top-7 left-7"
+            />
+            <img
+              v-else
+              src="./assets/icons/mic.svg"
               alt="end call"
               class="absolute top-7 left-7"
             />
@@ -71,6 +79,7 @@ export default defineComponent({
     const roomId = ref("fsdlkfhjdsfhsadlkfhasdlfldhfs");
     let peer: SimplePeer.Instance;
     let stream: MediaStream;
+    const isMuted = ref(false);
 
     const endCall = () => {
       if (peer) {
@@ -82,6 +91,7 @@ export default defineComponent({
       if (stream) {
         stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0]
           .enabled;
+        isMuted.value = stream.getAudioTracks()[0].enabled;
       }
     };
 
@@ -189,7 +199,8 @@ export default defineComponent({
       theirVideo,
       roomId,
       endCall,
-      toggleMic
+      toggleMic,
+      isMuted
     };
   }
 });
