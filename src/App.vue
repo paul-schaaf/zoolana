@@ -59,7 +59,9 @@
   </div>
   <div @click="createRoom" style="cursor:pointer">Create room</div>
   <input v-model="accountSecret" type="text" />
-  <div @click="joinRoom(accountSecret)" style="cursor:pointer">Join room</div>
+  <button @click="joinRoom(accountSecret)" style="cursor:pointer">
+    Join room
+  </button>
   <div>{{ info }}</div>
 </template>
 
@@ -125,11 +127,7 @@ export default defineComponent({
         account
       );
 
-      const accountDataParser = new AccountDataParser(
-        connection,
-        account.publicKey,
-        1
-      );
+      const accountDataParser = new AccountDataParser(connection, account, 1);
 
       // get video/voice stream
       stream = await navigator.mediaDevices.getUserMedia({
@@ -171,11 +169,7 @@ export default defineComponent({
 
       await signalSender.createConnectionAccount();
 
-      const accountDataParser = new AccountDataParser(
-        connection,
-        account.publicKey,
-        2
-      );
+      const accountDataParser = new AccountDataParser(connection, account, 2);
 
       // get video/voice stream
       stream = await navigator.mediaDevices.getUserMedia({
