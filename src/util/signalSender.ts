@@ -29,6 +29,16 @@ export class SignalSender {
     #senderId: number;
     #encryption: Encryption;
 
+
+    private constructor(connection: Connection, senderId: number) {
+      this.#signalCounter = -1;
+      this.#connection = connection;
+      this.#connectionAccount = new Account();
+      this.#masterAcc = new Account();
+      this.#senderId = senderId;
+      this.#encryption = new Encryption(this.#connectionAccount.secretKey);
+  }
+
     static async new(connection: Connection, senderId: number) {
         const signalSender = new SignalSender(connection, senderId);
 
@@ -87,15 +97,6 @@ export class SignalSender {
         this.#masterAcc,
         this.#connectionAccount
       );
-    }
-
-    private constructor(connection: Connection, senderId: number) {
-        this.#signalCounter = -1;
-        this.#connection = connection;
-        this.#connectionAccount = new Account();
-        this.#masterAcc = new Account();
-        this.#senderId = senderId;
-        this.#encryption = new Encryption(this.#connectionAccount.secretKey);
     }
 
     async sendSignal(signal: string) {
@@ -167,7 +168,7 @@ export class SignalSender {
           }
     }
 
-    setConnectionAccount(connectionAccount : Account) {
+    private setConnectionAccount(connectionAccount : Account) {
         this.#connectionAccount = connectionAccount;
         this.#encryption = new Encryption(connectionAccount.secretKey);
     }
