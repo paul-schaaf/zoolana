@@ -23,7 +23,7 @@ export class Encryption {
         const encrypted = dataWithNonce.slice(nacl.secretbox.nonceLength, dataWithNonce.length);
 
         const decrypted = nacl.secretbox.open(encrypted, nonce, this.#secretKey);
-        if (decrypted === null) {
+        if (!decrypted) {
             throw new Error("Couldn't decrypt message data!")
         }
         return decrypted;
