@@ -22,6 +22,7 @@
     "postcss": "^7.0.35",
     "simple-peer": "^9.9.3",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
+    "tweetnacl": "^1.0.3",
     "vue": "^3.0.0"
   },
   "devDependencies": {

@@ -9,9 +9,11 @@ import {
 } from "@solana/web3.js";
 import { newAccountWithLamports } from "./new-account-with-lamports";
 import { sendAndConfirmTransaction } from "./send-and-confirm-transaction";
+import { Encryption } from "./encryption";
 import BN from "bn.js";
 import { chunk } from "./chunk";
 import { createAccount } from './account';
+import { secretbox } from "tweetnacl";
 import base58 from 'bs58';
 
 const WRITE_MSG_TAG = 0;
@@ -25,6 +27,17 @@ export class SignalSender {
     #connectionAccount: Account;
     #masterAcc: Account;
     #senderId: number;
+    #encryption: Encryption;
+
+
+    private constructor(connection: Connection, senderId: number) {
+      this.#signalCounter = -1;
+      this.#connection = connection;
+      this.#connectionAccount = new Account();
+      this.#masterAcc = new Account();
+      this.#senderId = senderId;
+      this.#encryption = new Encryption(this.#connectionAccount.secretKey);
+  }
 
     static async new(connection: Connection, senderId: number) {
         const signalSender = new SignalSender(connection, senderId);
@@ -59,7 +72,7 @@ export class SignalSender {
 
     static async newWithAccount(connection: Connection, senderId: number, connectionAccount: Account) {
         const signalSender = new SignalSender(connection, senderId);
-        signalSender.#connectionAccount = connectionAccount;
+        signalSender.setConnectionAccount(connectionAccount);
 
         signalSender.#masterAcc = await newAccountWithLamports(
             connection,
@@ -86,25 +99,18 @@ export class SignalSender {
       );
     }
 
-    private constructor(connection: Connection, senderId: number) {
-        this.#signalCounter = -1;
-        this.#connection = connection;
-        this.#connectionAccount = new Account();
-        this.#masterAcc = new Account();
-        this.#senderId = senderId;
-    }
-
     async sendSignal(signal: string) {
         this.#signalCounter += 1;
         const mySignalId = this.#signalCounter;
         const signalBuffer = Buffer.from(signal);
 
-        if (signalBuffer.length < 901) {
+        if (signalBuffer.length + secretbox.nonceLength< 901) {
+            const encrypted = this.#encryption.encrypt(Buffer.from(signalBuffer));
             const data = Buffer.concat([
-              Buffer.from([WRITE_MSG_TAG]),
-              Buffer.from([this.#senderId, mySignalId, 1, 1]),
-              Buffer.from(new BN(signalBuffer.length, 10).toArray("le", 2)),
-              signalBuffer
+                Buffer.from([WRITE_MSG_TAG]),
+                Buffer.from([this.#senderId, mySignalId, 1, 1]),
+                Buffer.from(new BN(encrypted.length, 10).toArray("le", 2)),
+                Buffer.from(encrypted)
             ]);
         
             const writeMessageIx = new TransactionInstruction({
@@ -130,11 +136,12 @@ export class SignalSender {
           } else {
               const splitSignalBuffer = chunk([...signalBuffer], 900);
               splitSignalBuffer.forEach(async (v, index) => {
+                  const encrypted = this.#encryption.encrypt(Buffer.from(v));
                 const data = Buffer.concat([
                   Buffer.from([WRITE_MSG_TAG]),
                   Buffer.from([this.#senderId, mySignalId, splitSignalBuffer.length, index]),
-                  Buffer.from(new BN(v.length, 10).toArray("le", 2)),
-                  Buffer.from(v)
+                  Buffer.from(new BN(encrypted.length, 10).toArray("le", 2)),
+                  Buffer.from(encrypted)
                 ]);
           
                 const writeMessageIx = new TransactionInstruction({
@@ -159,6 +166,11 @@ export class SignalSender {
                 );
               });
           }
+    }
+
+    private setConnectionAccount(connectionAccount : Account) {
+        this.#connectionAccount = connectionAccount;
+        this.#encryption = new Encryption(connectionAccount.secretKey);
     }
 
     getAccInfo() {

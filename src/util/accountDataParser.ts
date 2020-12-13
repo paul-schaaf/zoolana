@@ -1,6 +1,7 @@
-import { AccountInfo, Connection, PublicKey } from "@solana/web3.js";
+import { AccountInfo, Account, Connection, PublicKey } from "@solana/web3.js";
 import BN from 'bn.js';
 import { EventEmitter } from 'events';
+import { Encryption } from "@/util/encryption";
 
 interface Message {
     senderId: number,
@@ -24,13 +25,15 @@ export class AccountDataParser extends EventEmitter{
     #ongoingSignals: Signal[];
     #connection: Connection;
     #accountPubkey: PublicKey;
+    #encryption: Encryption;
     #senderId: number;
 
-    constructor(connection: Connection, accountPubkey: PublicKey, senderId: number) {
+    constructor(connection: Connection, account: Account, senderId: number) {
         super();
         this.#ongoingSignals = [];
         this.#connection = connection;
-        this.#accountPubkey = accountPubkey;
+        this.#accountPubkey = account.publicKey;
+        this.#encryption = new Encryption(account.secretKey);
         this.#connection.onAccountChange(this.#accountPubkey, this.handleAccountChange.bind(this), 'singleGossip');
         this.#senderId = senderId;
         this.#signalCounter = 0;
@@ -52,7 +55,7 @@ export class AccountDataParser extends EventEmitter{
                         messageParts: accountData[i + 2],
                         messagePartId: accountData[i + 3],
                         messageLength: currentMessageLength,
-                        message: [...accountData].slice(i + 6, currentMessageLength + 6 + i)
+                        message: [...Buffer.from(this.#encryption.decrypt(accountData.slice(i + 6, currentMessageLength + 6 + i)))]
                     };
 
                     if (!this.#processedSignals.find(s => s.signalId === message.signalId)) {
