@@ -57,9 +57,9 @@
       </div>
     </div>
   </div>
-  <div @click="createRoom" style="cursor:pointer">Create room</div>
+  <div @click="onCreateRoom" style="cursor:pointer">Create room</div>
   <input v-model="accountSecret" type="text" />
-  <button @click="joinRoom(accountSecret)" style="cursor:pointer">
+  <button @click="onJoinRoom" style="cursor:pointer">
     Join room
   </button>
 </template>
@@ -98,6 +98,14 @@ export default defineComponent({
     onMounted(async () => {
       await playOwnVideo();
     });
+
+    const onCreateRoom = async () => {
+      await createRoom(theirVideo);
+    };
+
+    const onJoinRoom = async () => {
+      await joinRoom(accountSecret.value, theirVideo);
+    };
 
     return {
       createRoom,
