@@ -70,6 +70,7 @@ export const joinRoom = async (secret: string, theirVideo: Ref<any>) => {
   room.isMuted.value = false;
   room.roomId.value = secret;
   room.stream = stream;
+  room.peer = peer;
 };
 
 export const createRoom = async (theirVideo: Ref<any>) => {
@@ -106,4 +107,5 @@ export const createRoom = async (theirVideo: Ref<any>) => {
   room.isMuted.value = false;
   room.roomId.value = bs58.encode(account.secretKey);
   room.stream = stream;
+  room.peer = peer;
 };
