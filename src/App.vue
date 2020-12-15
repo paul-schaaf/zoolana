@@ -27,7 +27,7 @@
           <div
             class="h-20 w-20 bg-gray-400 rounded-full relative cursor-pointer transition-colors"
             :class="{ 'bg-gray-700': isMuted }"
-            @click="toggleMic"
+            @click="toggleOutgoingMic"
           >
             <img
               v-if="isMuted"
@@ -57,21 +57,22 @@
       </div>
     </div>
   </div>
-  <div @click="createRoom" style="cursor:pointer">Create room</div>
+  <div @click="onCreateRoom" style="cursor:pointer">Create room</div>
   <input v-model="accountSecret" type="text" />
-  <button @click="joinRoom(accountSecret)" style="cursor:pointer">
+  <button @click="onJoinRoom" style="cursor:pointer">
     Join room
   </button>
-  <div>{{ info }}</div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
-import SimplePeer from "simple-peer";
-import { SignalSender } from "./util/signalSender";
-import { AccountDataParser } from "./util/accountDataParser";
-import { Account, clusterApiUrl, Connection } from "@solana/web3.js";
-import bs58 from "bs58";
+import {
+  room,
+  createRoom,
+  joinRoom,
+  toggleOutgoingMic,
+  endCall
+} from "./util/room";
 import copy from "copy-to-clipboard";
 
 export default defineComponent({
@@ -79,130 +80,43 @@ export default defineComponent({
   setup() {
     const myVideo = ref();
     const theirVideo = ref();
-    const info = ref("");
     const accountSecret = ref("");
-    const roomId = ref("");
-    let peer: SimplePeer.Instance;
-    let stream: MediaStream;
-    const isMuted = ref(false);
 
     const copyRoomSecret = () => {
-      copy(roomId.value);
+      copy(room.roomId.value);
     };
 
-    const endCall = () => {
-      if (peer) {
-        peer.destroy();
-      }
-    };
-
-    const toggleMic = () => {
-      if (stream) {
-        stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0]
-          .enabled;
-        isMuted.value = !stream.getAudioTracks()[0].enabled;
-      }
-    };
-
-    onMounted(async () => {
+    const playOwnVideo = async () => {
       const videoStream = await navigator.mediaDevices.getUserMedia({
         video: true
       });
       const video = myVideo.value;
       video.srcObject = videoStream;
       video.play();
+    };
+
+    onMounted(async () => {
+      await playOwnVideo();
     });
 
-    async function createRoom() {
-      const connection = new Connection(
-        clusterApiUrl("devnet"),
-        "singleGossip"
-      );
-      const account = new Account();
+    const onCreateRoom = async () => {
+      await createRoom(theirVideo);
+    };
 
-      roomId.value = bs58.encode(account.secretKey);
-      const signalSender = await SignalSender.newWithAccount(
-        connection,
-        1,
-        account
-      );
-
-      const accountDataParser = new AccountDataParser(connection, account, 1);
-
-      // get video/voice stream
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-
-      peer = new SimplePeer({ stream });
-
-      accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
-
-      peer.on("signal", data => {
-        signalSender.sendSignal(JSON.stringify(data));
-      });
-
-      peer.on("stream", stream => {
-        const video = theirVideo.value;
-        video.srcObject = stream;
-        video.play();
-      });
-    }
-
-    async function joinRoom(secret: string) {
-      console.log("Joining Room!");
-      roomId.value = secret;
-
-      const connection = new Connection(
-        clusterApiUrl("devnet"),
-        "singleGossip"
-      );
-
-      const account = new Account(bs58.decode(secret));
-
-      const signalSender = await SignalSender.newWithAccount(
-        connection,
-        2,
-        account
-      );
-
-      await signalSender.createConnectionAccount();
-
-      const accountDataParser = new AccountDataParser(connection, account, 2);
-
-      // get video/voice stream
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-
-      peer = new SimplePeer({ stream, initiator: true });
-
-      accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
-
-      peer.on("signal", data => {
-        signalSender.sendSignal(JSON.stringify(data));
-      });
-
-      peer.on("stream", stream => {
-        const video = theirVideo.value;
-        video.srcObject = stream;
-        video.play();
-      });
-    }
+    const onJoinRoom = async () => {
+      await joinRoom(accountSecret.value, theirVideo);
+    };
 
     return {
-      info,
-      createRoom,
-      joinRoom,
+      onCreateRoom,
+      onJoinRoom,
       accountSecret,
       myVideo,
       theirVideo,
       copyRoomSecret,
       endCall,
-      toggleMic,
-      isMuted
+      toggleOutgoingMic,
+      isMuted: room.isMuted
     };
   }
 });
