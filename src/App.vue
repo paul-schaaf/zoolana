@@ -108,8 +108,8 @@ export default defineComponent({
     };
 
     return {
-      createRoom,
-      joinRoom,
+      onCreateRoom,
+      onJoinRoom,
       accountSecret,
       myVideo,
       theirVideo,
