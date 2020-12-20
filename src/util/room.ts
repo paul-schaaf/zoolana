@@ -6,35 +6,41 @@ import { getConnection } from "./connection";
 import { AccountDataParser } from "./accountDataParser";
 import { Ref, ref } from "vue";
 
-interface Room {
+export interface Room {
   roomId: Ref<string>;
   isMuted: Ref<boolean>;
-  stream: null | MediaStream;
+  outgoingStream: null | MediaStream;
+  incomingStream: null | MediaStream;
   peer: null | SimplePeer.Instance;
 }
 
 export const room: Room = {
   roomId: ref(""),
   isMuted: ref(false),
-  stream: null,
+  outgoingStream: null,
+  incomingStream: null,
   peer: null
 };
 
 export const toggleOutgoingMic = () => {
-  if (room.stream) {
-    room.stream.getAudioTracks()[0].enabled = !room.stream.getAudioTracks()[0]
+  if (room.outgoingStream) {
+    room.outgoingStream.getAudioTracks()[0].enabled = !room.outgoingStream.getAudioTracks()[0]
       .enabled;
-    room.isMuted.value = !room.stream.getAudioTracks()[0].enabled;
+    room.isMuted.value = !room.outgoingStream.getAudioTracks()[0].enabled;
   }
 };
 
 export const endCall = () => {
   if (room?.peer) {
+    room.outgoingStream?.getTracks().forEach(track => track.stop());
+    room.outgoingStream = null;
+    room.incomingStream?.getTracks().forEach(track => track.stop());
+    room.outgoingStream = null;
     room.peer.destroy();
   }
 };
 
-export const joinRoom = async (secret: string, theirVideo: Ref<any>) => {
+export const joinRoom = async (secret: string) => {
   const account = new Account(bs58.decode(secret));
 
   const signalSender = await SignalSender.newWithAccount(
@@ -57,23 +63,29 @@ export const joinRoom = async (secret: string, theirVideo: Ref<any>) => {
 
   accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
 
-  peer.on("signal", data => {
-    signalSender.sendSignal(JSON.stringify(data));
+  const firstSignalReceived: Promise<void> = new Promise(resolve => {
+    peer.on("signal", data => {
+      resolve();
+      signalSender.sendSignal(JSON.stringify(data));
+    });
   });
 
-  peer.on("stream", stream => {
-    const video = theirVideo.value;
-    video.srcObject = stream;
-    video.play();
+  const streamReceived: Promise<void> = new Promise(resolve => {
+    peer.on("stream", (stream: MediaStream) => {
+      resolve();
+      room.incomingStream = stream;
+    });
   });
 
   room.isMuted.value = false;
   room.roomId.value = secret;
-  room.stream = stream;
+  room.outgoingStream = stream;
   room.peer = peer;
+
+  return { firstSignalReceived, streamReceived };
 };
 
-export const createRoom = async (theirVideo: Ref<any>) => {
+export const createRoom = async () => {
   const account = new Account();
 
   const signalSender = await SignalSender.newWithAccount(
@@ -94,18 +106,24 @@ export const createRoom = async (theirVideo: Ref<any>) => {
 
   accountDataParser.on("signal", data => peer.signal(JSON.parse(data)));
 
-  peer.on("signal", data => {
-    signalSender.sendSignal(JSON.stringify(data));
+  const firstSignalReceived: Promise<void> = new Promise(resolve => {
+    peer.on("signal", data => {
+      resolve();
+      signalSender.sendSignal(JSON.stringify(data));
+    });
   });
 
-  peer.on("stream", stream => {
-    const video = theirVideo.value;
-    video.srcObject = stream;
-    video.play();
+  const streamReceived: Promise<void> = new Promise(resolve => {
+    peer.on("stream", (stream: MediaStream) => {
+      resolve();
+      room.incomingStream = stream;
+    });
   });
 
   room.isMuted.value = false;
   room.roomId.value = bs58.encode(account.secretKey);
-  room.stream = stream;
+  room.outgoingStream = stream;
   room.peer = peer;
+
+  return { firstSignalReceived, streamReceived };
 };
