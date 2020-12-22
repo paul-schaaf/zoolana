@@ -61,13 +61,13 @@
         </p>
       </div>
     </modal>
-    <modal :show="showCreateRoomModal" classes="w-72" @close="cancelCall">
+    <modal :show="showCreateRoomModal" :showClose="isCreatingRoom" classes="w-72" @close="cancelCall">
       <div class="w-2/3 flex flex-col items-center text-center mb-5">
-        <p class="mt-24" :class="{ 'mb-16': !showCopyButton }">
+        <p class="mt-24" :class="{ 'mb-16': !isCreatingRoom }">
           {{ createRoomModalText }}
         </p>
         <div
-          v-if="showCopyButton"
+          v-if="isCreatingRoom"
           class="bg-blue-gradient relative mt-12 px-5 py-3 rounded-lg cursor-pointer select-none"
           @click="copyRoomSecret"
         >
@@ -120,7 +120,7 @@ export default defineComponent({
     const showInstructions = ref(false);
     const showCreateRoomModal = ref(false);
     const createRoomModalText = ref("");
-    const showCopyButton = ref(false);
+    const isCreatingRoom = ref(false);
     const showJoinRoomModal = ref(false);
     const secretRoomId = ref("");
     const joinRoomModalText = ref("");
@@ -130,7 +130,7 @@ export default defineComponent({
       showCreateRoomModal.value = true;
       createRoomModalText.value = "Creating room...";
       const { firstSignalReceived, streamReceived } = await createRoom();
-      showCopyButton.value = true;
+      isCreatingRoom.value = true;
       createRoomModalText.value = "Waiting for peer...";
       await firstSignalReceived;
       createRoomModalText.value = "Found peer! Establishing connection...";
@@ -161,7 +161,7 @@ export default defineComponent({
       destroyRoom();
       showCreateRoomModal.value = false;
       showJoinRoomModal.value = false;
-      showCopyButton.value = false;
+      isCreatingRoom.value = false;
     };
 
     return {
@@ -176,7 +176,7 @@ export default defineComponent({
       showJoinRoomModal,
       onJoinCall,
       joinRoomModalText,
-      showCopyButton
+      isCreatingRoom
     };
   }
 });

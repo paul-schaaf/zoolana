@@ -9,6 +9,7 @@
           <div class="relative flex flex-col items-center">
             <slot />
             <div
+              v-if="showClose"
               class="absolute top-2 right-4 cursor-pointer select-none text-2xl"
               @click="onClose"
             >
@@ -33,6 +34,10 @@ export default defineComponent({
     classes: {
       type: String,
       default: ""
+    },
+    showClose: {
+      type: Boolean,
+      default: true
     }
   },
   setup(_, { emit }) {
