@@ -23,7 +23,8 @@
     "simple-peer": "^9.9.3",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
     "tweetnacl": "^1.0.3",
-    "vue": "^3.0.0"
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.1"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.6",
