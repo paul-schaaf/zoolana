@@ -41,7 +41,7 @@
         <p class="mt-12">
           Welcome to Zoolana! A p2p meeting app built on Solana. For now you can
           only do <strong> 2-person video calls</strong> but more functionality
-          is coming!
+          is coming! This app currently runs on <span class="text-yellow-600">testnet</span>.
         </p>
         <p class="mt-3">1. Connect your wallet</p>
         <p class="mt-3">2. Start or join call</p>
