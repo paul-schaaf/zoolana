@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+// TODO: remove this if not needed
+.shine {
+    overflow: hidden;
+    position: relative;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        background: rgba(255, 255, 255, 0.5);
+        width: 60px;
+        height: 100%;
+        top: 0;
+        filter: blur(30px);
+        transform: translateX(-200px) skewX(-15deg);
+    }
+    
+    &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        background: rgba(255, 255, 255, 0.2);
+        width: 30px;
+        height: 100%;
+        top: 0;
+        filter: blur(5px);
+        transform: translateX(-200px) skewX(-15deg);
+    }
+
+    &:hover {
+        &::before,
+        &::after {
+            transform: translateX(500px) skewX(-15deg);
+            transition: 2s;
+        }
+    }
+}
+
+.bg-blue-gradient {
+    background: linear-gradient(135deg, #0052d4, #6fb1fc);
+
+}
+
+.bg-pink-gradient {
+    background: linear-gradient(135deg, #EC008C, #FC6767);
+}
+
+.bg-gray-gradient {
+    background: linear-gradient(135deg, #0b0b0b, #282828);
+}
+
+.shadow-main {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.transform-middle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+
+@layer components {
+    .big-btn {
+        @apply h-24 w-48 flex items-center justify-center rounded-lg cursor-pointer;
+    }
+}

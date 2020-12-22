@@ -4,7 +4,7 @@ import "./assets/fonts/font.scss";
 import { createApp } from "vue";
 
 import App from "./App.vue";
-import "./assets/styles/tailwind.css";
+import "./assets/styles/tailwind.scss";
 import router from "./router";
 
 const app = createApp(App);
