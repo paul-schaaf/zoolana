@@ -62,7 +62,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { room, toggleOutgoingMic, endCall } from "@/util/room";
+import { room, toggleOutgoingMic, destroyRoom } from "@/util/room";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
@@ -85,7 +85,7 @@ export default defineComponent({
     });
 
     const onEndCall = () => {
-      endCall();
+      destroyRoom();
       router.push({ name: "Home" });
     };
 
