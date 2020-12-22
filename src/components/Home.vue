@@ -1,13 +1,29 @@
 <template>
-  <div @click="onCreateRoom" style="cursor:pointer">Create room</div>
-  <input
-    v-model="accountSecret"
-    class="block border border-black"
-    type="text"
-  />
-  <button @click="onJoinRoom" style="cursor:pointer">
-    Join room
-  </button>
+  <div class="h-screen w-screen bg-gray-900 flex justify-center text-white">
+    <div class="w-full md:w-1/2 flex flex-col">
+      <h1 class="text-4xl text-center mt-64">Zoolana</h1>
+      <p class="text-center mt-8">
+        Click <span class="underline cursor-pointer">here</span> for
+        instructions
+      </p>
+      <div class="flex justify-center mt-9">
+        <div
+          class="bg-blue-gradient rounded-lg flex items-center w-48 h-24 justify-center align-center cursor-pointer"
+        >
+          Connect Wallet
+        </div>
+      </div>
+      <!-- <div @click="onCreateRoom" style="cursor:pointer">Create room</div>
+      <input
+        v-model="accountSecret"
+        class="block border border-black"
+        type="text"
+      />
+      <button @click="onJoinRoom" style="cursor:pointer">
+        Join room
+      </button> -->
+    </div>
+  </div>
 </template>
 
 <script lang="ts">

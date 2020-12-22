@@ -2,10 +2,8 @@
   <router-view />
 </template>
 
-<style lang="scss" scoped>
-#outgoing {
-  width: 600px;
-  word-wrap: break-word;
-  white-space: normal;
+<style lang="scss">
+.bg-blue-gradient {
+  background: linear-gradient(135deg, #0052d4, #6fb1fc);
 }
 </style>
