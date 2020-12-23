@@ -27,6 +27,7 @@ export class AccountDataParser extends EventEmitter{
     #accountPubkey: PublicKey;
     #encryption: Encryption;
     #senderId: number;
+    #accountListenerId: number;
 
     constructor(connection: Connection, account: Account, senderId: number) {
         super();
@@ -34,11 +35,15 @@ export class AccountDataParser extends EventEmitter{
         this.#connection = connection;
         this.#accountPubkey = account.publicKey;
         this.#encryption = new Encryption(account.secretKey);
-        this.#connection.onAccountChange(this.#accountPubkey, this.handleAccountChange.bind(this), 'singleGossip');
+        this.#accountListenerId = this.#connection.onAccountChange(this.#accountPubkey, this.handleAccountChange.bind(this), 'singleGossip');
         this.#senderId = senderId;
         this.#signalCounter = 0;
         this.#bufferedSignals = [];
         this.#processedSignals = [];
+    }
+
+    removeAccountListener() {
+        this.#connection.removeAccountChangeListener(this.#accountListenerId);
     }
 
     private handleAccountChange(accountInfo: AccountInfo<Buffer>) {

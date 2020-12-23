@@ -11,6 +11,7 @@ export async function sendAndConfirmTransaction(
   ...signers: Account[]
 ) {
   await realSendAndConfirmTransaction(connection, transaction, signers, {
-    skipPreflight: true
+    skipPreflight: true,
+    commitment: "singleGossip"
   });
 }

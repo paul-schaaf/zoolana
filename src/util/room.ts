@@ -22,6 +22,8 @@ export const room: Room = {
   peer: null
 };
 
+let accountDataParser: null | AccountDataParser = null;
+
 export const toggleOutgoingMic = () => {
   if (room.outgoingStream) {
     room.outgoingStream.getAudioTracks()[0].enabled = !room.outgoingStream.getAudioTracks()[0]
@@ -30,14 +32,17 @@ export const toggleOutgoingMic = () => {
   }
 };
 
-export const endCall = () => {
-  if (room?.peer) {
-    room.outgoingStream?.getTracks().forEach(track => track.stop());
-    room.outgoingStream = null;
-    room.incomingStream?.getTracks().forEach(track => track.stop());
-    room.outgoingStream = null;
-    room.peer.destroy();
-  }
+export const destroyRoom = () => {
+  room.outgoingStream?.getTracks().forEach(track => track.stop());
+  room.outgoingStream = null;
+  room.incomingStream?.getTracks().forEach(track => track.stop());
+  room.incomingStream = null;
+  room.peer?.destroy();
+  room.peer = null;
+  room.roomId.value = "";
+  room.isMuted.value = false;
+  accountDataParser?.removeAccountListener();
+  accountDataParser = null;
 };
 
 export const joinRoom = async (secret: string) => {
@@ -51,7 +56,7 @@ export const joinRoom = async (secret: string) => {
 
   await signalSender.createConnectionAccount();
 
-  const accountDataParser = new AccountDataParser(getConnection(), account, 2);
+  accountDataParser = new AccountDataParser(getConnection(), account, 2);
 
   // get video/voice stream
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -94,7 +99,7 @@ export const createRoom = async () => {
     account
   );
 
-  const accountDataParser = new AccountDataParser(getConnection(), account, 1);
+  accountDataParser = new AccountDataParser(getConnection(), account, 1);
 
   // get video/voice stream
   const stream = await navigator.mediaDevices.getUserMedia({
