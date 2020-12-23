@@ -12,6 +12,6 @@ export async function sendAndConfirmTransaction(
 ) {
   await realSendAndConfirmTransaction(connection, transaction, signers, {
     skipPreflight: true,
-    commitment: 'singleGossip'
+    commitment: "singleGossip"
   });
 }

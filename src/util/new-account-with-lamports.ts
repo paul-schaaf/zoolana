@@ -12,7 +12,10 @@ export async function newAccountWithLamports(
   await connection.requestAirdrop(account.publicKey, lamports);
   for (;;) {
     await sleep(500);
-    if (lamports == (await connection.getBalance(account.publicKey, 'singleGossip'))) {
+    if (
+      lamports ==
+      (await connection.getBalance(account.publicKey, "singleGossip"))
+    ) {
       return account;
     }
     if (--retries <= 0) {

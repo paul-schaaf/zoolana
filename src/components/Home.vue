@@ -18,7 +18,7 @@
           </div>
           <div
             class="big-btn bg-pink-gradient"
-            @click="showJoinRoomModal = true"
+            @click="joinModalState.showJoinRoomModal = true"
           >
             Join Call
           </div>
@@ -41,7 +41,8 @@
         <p class="mt-12">
           Welcome to Zoolana! A p2p meeting app built on Solana. For now you can
           only do <strong> 2-person video calls</strong> but more functionality
-          is coming! This app currently runs on <span class="text-yellow-600">testnet</span>.
+          is coming! This app currently runs on
+          <span class="text-yellow-600">testnet</span>.
         </p>
         <p class="mt-3">1. Connect your wallet</p>
         <p class="mt-3">2. Start or join call</p>
@@ -61,7 +62,12 @@
         </p>
       </div>
     </modal>
-    <modal :show="showCreateRoomModal" :showClose="isCreatingRoom" classes="w-72" @close="cancelCall">
+    <modal
+      :show="showCreateRoomModal"
+      :showClose="isCreatingRoom"
+      classes="w-72"
+      @close="cancelCall"
+    >
       <div class="w-2/3 flex flex-col items-center text-center mb-5">
         <p class="mt-24" :class="{ 'mb-16': !isCreatingRoom }">
           {{ createRoomModalText }}
@@ -75,14 +81,21 @@
         </div>
       </div>
     </modal>
-    <modal :show="showJoinRoomModal" classes="w-96" @close="cancelCall">
+    <modal
+      :show="joinModalState.showJoinRoomModal"
+      classes="w-96"
+      @close="onJoinModalCancel"
+    >
       <div class="w-2/3 mb-5">
-        <div v-if="!joinRoomModalText" class="mt-16 flex flex-col items-center">
+        <div
+          v-if="!joinModalState.joinRoomModalText"
+          class="mt-16 flex flex-col items-center"
+        >
           <label for="secret-room-id-input" class="w-full"
             >Secret room id</label
           >
           <input
-            v-model="secretRoomId"
+            v-model="joinModalState.secretRoomId"
             type="text"
             id="secret-room-id-input"
             class="w-full h-10 mt-2 px-2 bg-gray-800 inner-shadow-main rounded-lg"
@@ -95,7 +108,7 @@
           </div>
         </div>
         <div v-else class="mt-16 mb-10 text-center">
-          {{ joinRoomModalText }}
+          {{ joinModalState.joinRoomModalText }}
         </div>
       </div>
     </modal>
@@ -103,12 +116,43 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { useRouter } from "vue-router";
+import { defineComponent, reactive, ref } from "vue";
+import { Router, useRouter } from "vue-router";
 import copy from "copy-to-clipboard";
 
 import { createRoom, destroyRoom, joinRoom, room } from "@/util/room";
 import Modal from "@/components/helper/Modal.vue";
+
+const useJoinRoom = (router: Router) => {
+  const state = reactive({
+    showJoinRoomModal: false,
+    secretRoomId: "",
+    joinRoomModalText: ""
+  });
+
+  const onJoinCall = async () => {
+    if (!state.secretRoomId) {
+      return;
+    }
+    state.joinRoomModalText = "Joining room...";
+    const { firstSignalReceived, streamReceived } = await joinRoom(
+      state.secretRoomId
+    );
+    state.joinRoomModalText = "Waiting for peer...";
+    await firstSignalReceived;
+    state.joinRoomModalText = "Found peer! Establishing connection...";
+    await streamReceived;
+    state.joinRoomModalText = "Loading video...";
+    router.push({ name: "Room" });
+  };
+
+  const onCancel = () => {
+    destroyRoom();
+    state.showJoinRoomModal = false;
+  };
+
+  return { state, onJoinCall, onCancel };
+};
 
 export default defineComponent({
   name: "Home",
@@ -121,9 +165,6 @@ export default defineComponent({
     const showCreateRoomModal = ref(false);
     const createRoomModalText = ref("");
     const isCreatingRoom = ref(false);
-    const showJoinRoomModal = ref(false);
-    const secretRoomId = ref("");
-    const joinRoomModalText = ref("");
     const isConnected = ref(false);
 
     const onStartCall = async () => {
@@ -142,30 +183,20 @@ export default defineComponent({
       copy(room.roomId.value);
     };
 
-    const onJoinCall = async () => {
-      if (!secretRoomId.value) {
-        return;
-      }
-      joinRoomModalText.value = "Joining room...";
-      const { firstSignalReceived, streamReceived } = await joinRoom(
-        secretRoomId.value
-      );
-      joinRoomModalText.value = "Waiting for peer...";
-      await firstSignalReceived;
-      joinRoomModalText.value = "Found peer! Establishing connection...";
-      await streamReceived;
-      router.push({ name: "Room" });
-    };
-
     const cancelCall = async () => {
       destroyRoom();
       showCreateRoomModal.value = false;
-      showJoinRoomModal.value = false;
       isCreatingRoom.value = false;
     };
 
+    const {
+      state: joinModalState,
+      onJoinCall,
+      onCancel: onJoinModalCancel
+    } = useJoinRoom(router);
+
     return {
-      secretRoomId,
+      joinModalState,
       showInstructions,
       isConnected,
       showCreateRoomModal,
@@ -173,9 +204,8 @@ export default defineComponent({
       copyRoomSecret,
       onStartCall,
       cancelCall,
-      showJoinRoomModal,
       onJoinCall,
-      joinRoomModalText,
+      onJoinModalCancel,
       isCreatingRoom
     };
   }
