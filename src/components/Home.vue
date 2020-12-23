@@ -63,17 +63,17 @@
       </div>
     </modal>
     <modal
-      :show="showCreateRoomModal"
-      :showClose="isCreatingRoom"
+      :show="startModalState.showCreateRoomModal"
+      :showClose="startModalState.isCreatingRoom"
       classes="w-72"
-      @close="cancelCall"
+      @close="onStartModalCancel"
     >
       <div class="w-2/3 flex flex-col items-center text-center mb-5">
-        <p class="mt-24" :class="{ 'mb-16': !isCreatingRoom }">
-          {{ createRoomModalText }}
+        <p class="mt-24" :class="{ 'mb-16': !startModalState.isCreatingRoom }">
+          {{ startModalState.createRoomModalText }}
         </p>
         <div
-          v-if="isCreatingRoom"
+          v-if="startModalState.isCreatingRoom"
           class="bg-blue-gradient relative mt-12 px-5 py-3 rounded-lg cursor-pointer select-none"
           @click="copyRoomSecret"
         >
@@ -123,7 +123,7 @@ import copy from "copy-to-clipboard";
 import { createRoom, destroyRoom, joinRoom, room } from "@/util/room";
 import Modal from "@/components/helper/Modal.vue";
 
-const useJoinRoom = (router: Router) => {
+const useJoinCall = (router: Router) => {
   const state = reactive({
     showJoinRoomModal: false,
     secretRoomId: "",
@@ -154,6 +154,33 @@ const useJoinRoom = (router: Router) => {
   return { state, onJoinCall, onCancel };
 };
 
+const useStartCall = (router: Router) => {
+  const state = reactive({
+    showCreateRoomModal: false,
+    createRoomModalText: "",
+    isCreatingRoom: false
+  });
+
+  const onStartCall = async () => {
+    state.showCreateRoomModal = true;
+    state.createRoomModalText = "Creating room...";
+    const { firstSignalReceived, streamReceived } = await createRoom();
+    state.isCreatingRoom = true;
+    state.createRoomModalText = "Waiting for peer...";
+    await firstSignalReceived;
+    state.createRoomModalText = "Found peer! Establishing connection...";
+    await streamReceived;
+    router.push({ name: "Room" });
+  };
+
+  const onCancel = () => {
+    destroyRoom();
+    state.showCreateRoomModal = false;
+  };
+
+  return { state, onStartCall, onCancel };
+};
+
 export default defineComponent({
   name: "Home",
   components: {
@@ -162,51 +189,34 @@ export default defineComponent({
   setup() {
     const router = useRouter();
     const showInstructions = ref(false);
-    const showCreateRoomModal = ref(false);
-    const createRoomModalText = ref("");
-    const isCreatingRoom = ref(false);
     const isConnected = ref(false);
-
-    const onStartCall = async () => {
-      showCreateRoomModal.value = true;
-      createRoomModalText.value = "Creating room...";
-      const { firstSignalReceived, streamReceived } = await createRoom();
-      isCreatingRoom.value = true;
-      createRoomModalText.value = "Waiting for peer...";
-      await firstSignalReceived;
-      createRoomModalText.value = "Found peer! Establishing connection...";
-      await streamReceived;
-      router.push({ name: "Room" });
-    };
 
     const copyRoomSecret = () => {
       copy(room.roomId.value);
     };
 
-    const cancelCall = async () => {
-      destroyRoom();
-      showCreateRoomModal.value = false;
-      isCreatingRoom.value = false;
-    };
+    const {
+      state: startModalState,
+      onStartCall,
+      onCancel: onStartModalCancel
+    } = useStartCall(router);
 
     const {
       state: joinModalState,
       onJoinCall,
       onCancel: onJoinModalCancel
-    } = useJoinRoom(router);
+    } = useJoinCall(router);
 
     return {
       joinModalState,
       showInstructions,
       isConnected,
-      showCreateRoomModal,
-      createRoomModalText,
       copyRoomSecret,
-      onStartCall,
-      cancelCall,
       onJoinCall,
       onJoinModalCancel,
-      isCreatingRoom
+      onStartCall,
+      startModalState,
+      onStartModalCancel
     };
   }
 });
