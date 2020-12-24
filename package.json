@@ -11,6 +11,7 @@
     "localnet:logs": "solana-localnet logs -f"
   },
   "dependencies": {
+    "@project-serum/sol-wallet-adapter": "^0.1.4",
     "@solana/web3.js": "^0.87.1",
     "autoprefixer": "^9.8.6",
     "bip32": "^2.0.6",

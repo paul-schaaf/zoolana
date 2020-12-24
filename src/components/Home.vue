@@ -26,7 +26,7 @@
         <div
           v-else
           class="big-btn bg-blue-gradient"
-          @click="isConnected = true"
+          @click="connectWallet"
         >
           Connect Wallet
         </div>
@@ -121,6 +121,7 @@ import { Router, useRouter } from "vue-router";
 import copy from "copy-to-clipboard";
 
 import { createRoom, destroyRoom, joinRoom, room } from "@/util/room";
+import { connectToWallet } from "@/util/externalWallet";
 import Modal from "@/components/helper/Modal.vue";
 
 const useJoinRoom = (router: Router) => {
@@ -167,6 +168,11 @@ export default defineComponent({
     const isCreatingRoom = ref(false);
     const isConnected = ref(false);
 
+    const connectWallet = async () => {
+      await connectToWallet();
+      isConnected.value = true;
+    };
+
     const onStartCall = async () => {
       showCreateRoomModal.value = true;
       createRoomModalText.value = "Creating room...";
@@ -199,6 +205,7 @@ export default defineComponent({
       joinModalState,
       showInstructions,
       isConnected,
+      connectWallet,
       showCreateRoomModal,
       createRoomModalText,
       copyRoomSecret,
