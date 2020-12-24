@@ -91,15 +91,18 @@
           v-if="!joinModalState.joinRoomModalText"
           class="mt-16 flex flex-col items-center"
         >
-          <label for="secret-room-id-input" class="w-full"
-            >Secret room id</label
-          >
-          <input
-            v-model="joinModalState.secretRoomId"
-            type="text"
-            id="secret-room-id-input"
-            class="w-full h-10 mt-2 px-2 bg-gray-800 inner-shadow-main rounded-lg"
-          />
+          <form>
+            <label for="secret-room-id-input" class="w-full"
+              >Secret room id</label
+            >
+            <input
+              v-model="joinModalState.secretRoomId"
+              type="text"
+              id="secret-room-id-input"
+              class="w-full h-10 mt-2 px-2 bg-gray-800 inner-shadow-main rounded-lg"
+              autocomplete="off"
+            />
+          </form>
           <div
             class="bg-blue-gradient mt-12 px-5 py-3 rounded-lg cursor-pointer select-none"
             @click="onJoinCall"
