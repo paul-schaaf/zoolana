@@ -23,11 +23,7 @@
             Join Call
           </div>
         </div>
-        <div
-          v-else
-          class="big-btn bg-blue-gradient"
-          @click="connectWallet"
-        >
+        <div v-else class="big-btn bg-blue-gradient" @click="connectWallet">
           Connect Wallet
         </div>
       </div>

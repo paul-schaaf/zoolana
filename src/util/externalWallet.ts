@@ -39,6 +39,6 @@ export const connectToWallet = async () => {
 };
 
 export const useWallet = async (): Promise<Wallet> => {
-    await connectToWallet();
-    return wallet;
+  await connectToWallet();
+  return wallet;
 };

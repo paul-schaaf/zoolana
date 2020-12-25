@@ -4,7 +4,6 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
-  Transaction,
   TransactionInstruction
 } from "@solana/web3.js";
 import { Encryption } from "./encryption";
@@ -126,6 +125,7 @@ export class SignalSender {
               await sendTxUsingExternalSignature( [writeMessageIx],
                   this.#connection,
                   this.#wallet,
+                  this.#connectionAccount
               );
               });
           }
