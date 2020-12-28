@@ -23,11 +23,7 @@
             Join Call
           </div>
         </div>
-        <div
-          v-else
-          class="big-btn bg-blue-gradient"
-          @click="isConnected = true"
-        >
+        <div v-else class="big-btn bg-blue-gradient" @click="connectWallet">
           Connect Wallet
         </div>
       </div>
@@ -124,6 +120,7 @@ import { Router, useRouter } from "vue-router";
 import copy from "copy-to-clipboard";
 
 import { createRoom, destroyRoom, joinRoom, room } from "@/util/room";
+import { connectToWallet } from "@/util/externalWallet";
 import Modal from "@/components/helper/Modal.vue";
 
 const useJoinCall = (router: Router) => {
@@ -194,9 +191,12 @@ export default defineComponent({
     const showInstructions = ref(false);
     const isConnected = ref(false);
 
-    const copyRoomSecret = () => {
-      copy(room.roomId.value);
+    const connectWallet = async () => {
+      await connectToWallet();
+      isConnected.value = true;
     };
+
+    const copyRoomSecret = () => copy(room.roomId.value);
 
     const {
       state: startModalState,
@@ -219,7 +219,8 @@ export default defineComponent({
       onJoinModalCancel,
       onStartCall,
       startModalState,
-      onStartModalCancel
+      onStartModalCancel,
+      connectWallet
     };
   }
 });

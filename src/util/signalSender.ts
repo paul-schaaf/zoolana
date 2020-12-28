@@ -4,17 +4,17 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
-  Transaction,
   TransactionInstruction
 } from "@solana/web3.js";
-import { newAccountWithLamports } from "./new-account-with-lamports";
-import { sendAndConfirmTransaction } from "./send-and-confirm-transaction";
 import { Encryption } from "./encryption";
 import BN from "bn.js";
 import { chunk } from "./chunk";
 import { createAccount } from './account';
 import { secretbox } from "tweetnacl";
 import base58 from 'bs58';
+import {sendTxUsingExternalSignature, useWallet} from "@/util/externalWallet";
+//@ts-expect-error
+import Wallet from "@project-serum/sol-wallet-adapter";
 
 const WRITE_MSG_TAG = 0;
 const PROGRAM_ID = new PublicKey(
@@ -25,45 +25,19 @@ export class SignalSender {
     #signalCounter: number;
     #connection: Connection;
     #connectionAccount: Account;
-    #masterAcc: Account;
+    #wallet: Wallet;
     #senderId: number;
     #encryption: Encryption;
 
 
-    private constructor(connection: Connection, senderId: number) {
+    private constructor(connection: Connection, wallet: Wallet, senderId: number) {
       this.#signalCounter = -1;
       this.#connection = connection;
       this.#connectionAccount = new Account();
-      this.#masterAcc = new Account();
+      this.#wallet = wallet;
       this.#senderId = senderId;
       this.#encryption = new Encryption(this.#connectionAccount.secretKey);
   }
-
-    static async new(connection: Connection, senderId: number) {
-        const signalSender = new SignalSender(connection, senderId);
-
-        signalSender.#masterAcc = await newAccountWithLamports(
-            connection,
-            10 * LAMPORTS_PER_SOL
-          );
-
-        const connectionAccountIx = SystemProgram.createAccount({
-            fromPubkey: signalSender.#masterAcc.publicKey,
-            newAccountPubkey: signalSender.#connectionAccount.publicKey,
-            lamports: 2 * LAMPORTS_PER_SOL,
-            space: 20000,
-            programId: PROGRAM_ID
-          });
-      
-          await sendAndConfirmTransaction(
-            connection,
-            new Transaction().add(connectionAccountIx),
-            signalSender.#masterAcc,
-            signalSender.#connectionAccount
-          );
-
-          return signalSender;
-    }
 
     static async newWithAddress(connection: Connection, senderId: number, connectionAccountSecret: string) {
       const account = await createAccount(connectionAccountSecret);
@@ -71,32 +45,27 @@ export class SignalSender {
     }
 
     static async newWithAccount(connection: Connection, senderId: number, connectionAccount: Account) {
-        const signalSender = new SignalSender(connection, senderId);
+        const wallet = await useWallet();
+        const signalSender = new SignalSender(connection,wallet, senderId);
         signalSender.setConnectionAccount(connectionAccount);
-
-        signalSender.#masterAcc = await newAccountWithLamports(
-            connection,
-            10 * LAMPORTS_PER_SOL
-        );
 
         return signalSender;
     }
 
     createConnectionAccount() {
       const connectionAccountIx = SystemProgram.createAccount({
-        fromPubkey: this.#masterAcc.publicKey,
+        fromPubkey: this.#wallet.publicKey,
         newAccountPubkey: this.#connectionAccount.publicKey,
         lamports: 2 * LAMPORTS_PER_SOL,
         space: 20000,
         programId: PROGRAM_ID
       });
-  
-       return sendAndConfirmTransaction(
-        this.#connection,
-        new Transaction().add(connectionAccountIx),
-        this.#masterAcc,
-        this.#connectionAccount
-      );
+
+      return sendTxUsingExternalSignature(
+          [connectionAccountIx],
+          this.#connection,
+          this.#wallet,
+          this.#connectionAccount)
     }
 
     async sendSignal(signal: string) {
@@ -125,13 +94,10 @@ export class SignalSender {
               data
             });
         
-            const tx = new Transaction().add(writeMessageIx);
-        
-            await sendAndConfirmTransaction(
-              this.#connection,
-              tx,
-              this.#masterAcc,
-              this.#connectionAccount
+            await sendTxUsingExternalSignature( [writeMessageIx],
+                this.#connection,
+                this.#wallet,
+                this.#connectionAccount
             );
           } else {
               const splitSignalBuffer = chunk([...signalBuffer], 900);
@@ -155,15 +121,12 @@ export class SignalSender {
                   programId: PROGRAM_ID,
                   data
                 });
-          
-                const tx = new Transaction().add(writeMessageIx);
-          
-                await sendAndConfirmTransaction(
+
+              await sendTxUsingExternalSignature( [writeMessageIx],
                   this.#connection,
-                  tx,
-                  this.#masterAcc,
+                  this.#wallet,
                   this.#connectionAccount
-                );
+              );
               });
           }
     }
