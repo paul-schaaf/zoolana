@@ -86,7 +86,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { room, toggleOutgoingMic, destroyRoom } from "@/util/room";
+import { room, toggleOutgoingMic, destroyRoom } from "@/util/zoolana/room";
 import { useRouter } from "vue-router";
 
 export default defineComponent({

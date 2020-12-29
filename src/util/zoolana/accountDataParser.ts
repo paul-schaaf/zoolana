@@ -1,7 +1,7 @@
 import { AccountInfo, Account, Connection, PublicKey } from "@solana/web3.js";
 import BN from 'bn.js';
 import { EventEmitter } from 'events';
-import { Encryption } from "@/util/encryption";
+import { Encryption } from "@/util/zoolana/encryption";
 
 interface Message {
     senderId: number,

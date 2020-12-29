@@ -2,7 +2,7 @@ import SimplePeer from "simple-peer";
 import { SignalSender } from "./signalSender";
 import { Account } from "@solana/web3.js";
 import bs58 from "bs58";
-import { getConnection } from "./connection";
+import { getConnection } from "../solana/connection";
 import { AccountDataParser } from "./accountDataParser";
 import { Ref, ref } from "vue";
 

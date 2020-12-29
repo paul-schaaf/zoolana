@@ -132,8 +132,8 @@ import { defineComponent, reactive, ref } from "vue";
 import { Router, useRouter } from "vue-router";
 import copy from "copy-to-clipboard";
 
-import { createRoom, destroyRoom, joinRoom, room } from "@/util/room";
-import { connectToWallet } from "@/util/externalWallet";
+import { createRoom, destroyRoom, joinRoom, room } from "@/util/zoolana/room";
+import { connectToWallet } from "@/util/solana/externalWallet";
 import Modal from "@/components/helper/Modal.vue";
 
 const useJoinCall = (router: Router) => {
