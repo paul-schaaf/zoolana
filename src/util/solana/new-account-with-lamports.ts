@@ -1,6 +1,6 @@
 import { Account, Connection } from "@solana/web3.js";
 
-import { sleep } from "./sleep";
+import { sleep } from "../sleep";
 
 export async function newAccountWithLamports(
   connection: Connection,

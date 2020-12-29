@@ -7,11 +7,11 @@ import {
 } from "@solana/web3.js";
 import { Encryption } from "./encryption";
 import BN from "bn.js";
-import { chunk } from "./chunk";
-import { createAccount } from './account';
+import { chunk } from "../chunk";
+import { createAccount } from '../solana/account';
 import { secretbox } from "tweetnacl";
 import base58 from 'bs58';
-import {sendTxUsingExternalSignature, useWallet} from "@/util/externalWallet";
+import {sendTxUsingExternalSignature, useWallet} from "@/util/solana/externalWallet";
 //@ts-expect-error
 import Wallet from "@project-serum/sol-wallet-adapter";
 
