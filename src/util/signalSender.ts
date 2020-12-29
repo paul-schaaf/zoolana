@@ -1,7 +1,6 @@
 import {
   Account,
   Connection,
-  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   TransactionInstruction
@@ -52,11 +51,13 @@ export class SignalSender {
         return signalSender;
     }
 
-    createConnectionAccount() {
+    async createConnectionAccount() {
+      const lamportsRequired = await this.#connection.getMinimumBalanceForRentExemption(20000, 'singleGossip');
+
       const connectionAccountIx = SystemProgram.createAccount({
         fromPubkey: this.#wallet.publicKey,
         newAccountPubkey: this.#connectionAccount.publicKey,
-        lamports: 2 * LAMPORTS_PER_SOL,
+        lamports: lamportsRequired,
         space: 20000,
         programId: PROGRAM_ID
       });
