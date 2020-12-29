@@ -17,7 +17,7 @@ import Wallet from "@project-serum/sol-wallet-adapter";
 
 const WRITE_MSG_TAG = 0;
 const PROGRAM_ID = new PublicKey(
-    "62u3yVpZMjn1FebNuZxgvWnxDSVZLGUpCTFCV6zz8eig"
+    "zoo5fFJszDVcWWhbZYc6CKgM4fxrs5o3rWT9d1tBcNk"
   );
 
 export class SignalSender {
