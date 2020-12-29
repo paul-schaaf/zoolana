@@ -35,26 +35,39 @@
     >
       <div class="w-2/3 flex flex-col items-center text-center mb-12">
         <p class="mt-12">
-          Welcome to Zoolana! A p2p meeting app built on Solana. For now you can
-          only do <strong> 2-person video calls</strong> but more functionality
-          is coming! This app currently runs on
-          <span class="text-yellow-600">testnet</span>.
+          Welcome to Zoolana! A p2p meeting app built on Solana.
+          <span class="text-yellow-600">
+            For now you can only do 2-person video calls
+          </span>
+          but more functionality is coming! This app currently runs on
+          <span class="text-yellow-600">devnet</span>.
         </p>
         <p class="mt-3">1. Connect your wallet</p>
         <p class="mt-3">2. Start or join call</p>
         <p class="mt-3">
           2a. If you've clicked 'Start Call', copy the secret room id and send
-          it to your friend
+          it to your peer
         </p>
         <p class="mt-3">
-          2b. If you've clicked 'Join Call', paste the secret room id your
-          friend sent you and click 'Join'
+          2b. If you've clicked 'Join Call', paste the secret room id your peer
+          sent you and click 'Join'
         </p>
         <p class="mt-3">
           3. Do not close the modal. Wait for wallet confirmation requests.
-          There may be up to 20 (tip: use a wallet with only a little sol (in
-          case you don't trust the UI) and turn on auto accept in the first
-          confirmation popup). Accept them all and you will be connected.
+          There may be up to 20 (unfortunately no whitelist auto-accept feature
+          for sollet yet). Accept them all and you will be connected.
+        </p>
+        <p class="mt-3">
+          Cost breakdown per call: ~0.0001 SOL for all tx fees, 0.15 SOL as
+          account rent. Account rent will be recoverable once deployed on
+          mainnet
+        </p>
+        <p class="mt-3">
+          <span class="text-yellow-600"
+            >If something doesn't work as it should, open up the console and
+            report errors to me please! paulx#9059, find me in the Solana/Serum
+            Discords</span
+          >
         </p>
       </div>
     </modal>
