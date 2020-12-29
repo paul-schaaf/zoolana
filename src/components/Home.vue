@@ -30,7 +30,7 @@
     </div>
     <modal
       :show="showInstructions"
-      classes="w-2/3 md:w-1/2 lg:w-1/2 xl:w-1/3"
+      classes="w-full md:w-2/3 lg:w-1/2"
       @close="showInstructions = false"
     >
       <div class="w-2/3 flex flex-col items-center text-center mb-12">
@@ -40,7 +40,12 @@
             For now you can only do 2-person video calls
           </span>
           but more functionality is coming! This app currently runs on
-          <span class="text-yellow-600">devnet</span>.
+          <span class="text-yellow-600">devnet</span>, i.e. with play money.
+        </p>
+        <p class="mt-3">
+          0. Go to <a href="https://test.webrtc.org/">test.webrtc.org</a> and
+          check whether your setup is ready for WebRTC. It might still work if
+          not everything is green.
         </p>
         <p class="mt-3">1. Connect your wallet</p>
         <p class="mt-3">2. Start or join call</p>
@@ -66,7 +71,15 @@
           <span class="text-yellow-600"
             >If something doesn't work as it should, open up the console and
             report errors to me please! paulx#9059, find me in the Solana/Serum
-            Discords</span
+            Discords.</span
+          >
+        </p>
+        <p class="mt-3">
+          <a
+            href="https://github.com/paul-schaaf/zoolana"
+            target="_blank"
+            rel="noreferrer noopener"
+            >source</a
           >
         </p>
       </div>
