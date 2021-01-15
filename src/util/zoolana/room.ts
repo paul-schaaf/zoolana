@@ -9,6 +9,7 @@ import { Ref, ref } from "vue";
 export interface Room {
   roomId: Ref<string>;
   isMuted: Ref<boolean>;
+  isIncomingAudioMuted: Ref<boolean>;
   outgoingStream: null | MediaStream;
   incomingStream: null | MediaStream;
   peer: null | SimplePeer.Instance;
@@ -17,9 +18,22 @@ export interface Room {
 export const room: Room = {
   roomId: ref(""),
   isMuted: ref(false),
+  isIncomingAudioMuted: ref(false),
   outgoingStream: null,
   incomingStream: null,
   peer: null
+};
+
+const initRoom = (
+  roomId: string,
+  peer: SimplePeer.Instance,
+  outgoingStream: MediaStream
+) => {
+  room.roomId.value = roomId;
+  room.isMuted.value = false;
+  room.isIncomingAudioMuted.value = false;
+  room.peer = peer;
+  room.outgoingStream = outgoingStream;
 };
 
 let accountDataParser: null | AccountDataParser = null;
@@ -41,6 +55,7 @@ export const destroyRoom = () => {
   room.peer = null;
   room.roomId.value = "";
   room.isMuted.value = false;
+  room.isIncomingAudioMuted.value = false;
   accountDataParser?.removeAccountListener();
   accountDataParser = null;
 };
@@ -82,10 +97,7 @@ export const joinRoom = async (secret: string) => {
     });
   });
 
-  room.isMuted.value = false;
-  room.roomId.value = secret;
-  room.outgoingStream = stream;
-  room.peer = peer;
+  initRoom(secret, peer, stream);
 
   return { firstSignalReceived, streamReceived };
 };
@@ -125,10 +137,7 @@ export const createRoom = async () => {
     });
   });
 
-  room.isMuted.value = false;
-  room.roomId.value = bs58.encode(account.secretKey);
-  room.outgoingStream = stream;
-  room.peer = peer;
+  initRoom(bs58.encode(account.secretKey), peer, stream);
 
   return { firstSignalReceived, streamReceived };
 };
