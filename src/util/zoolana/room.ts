@@ -38,6 +38,9 @@ const initRoom = (
 
 let accountDataParser: null | AccountDataParser = null;
 
+export const toggleIsIncomingAudioMuted = () =>
+  (room.isIncomingAudioMuted.value = !room.isIncomingAudioMuted.value);
+
 export const toggleOutgoingMic = () => {
   if (room.outgoingStream) {
     room.outgoingStream.getAudioTracks()[0].enabled = !room.outgoingStream.getAudioTracks()[0]

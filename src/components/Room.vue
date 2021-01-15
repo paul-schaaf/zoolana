@@ -5,6 +5,7 @@
       <div class="relative mt-12 their-video">
         <video
           ref="theirVideo"
+          :muted="isIncomingAudioMuted"
           class="w-full h-full bg-gray-800"
           style="object-fit: cover;"
         ></video>
@@ -15,7 +16,51 @@
           muted
         ></video>
       </div>
-      <div class="mt-10 w-64 h-20 flex justify-between">
+      <div class="mt-10 w-96 h-20 flex justify-between">
+        <div
+          class="relative little-round-btn"
+          @click="toggleIsIncomingAudioMuted"
+        >
+          <svg
+            v-if="isIncomingAudioMuted"
+            alt="unmute incoming audio"
+            class="absolute top-7 left-7 select-none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+            <path
+              d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"
+            ></path>
+            <line x1="1" y1="1" x2="24" y2="24" stroke="red" />
+          </svg>
+          <svg
+            v-else
+            alt="mute incoming audio"
+            class="absolute top-7 left-7 select-none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+            <path
+              d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"
+            ></path>
+          </svg>
+        </div>
         <div class="relative little-round-btn" @click="toggleOutgoingMic">
           <svg
             v-if="isMuted"
@@ -86,7 +131,12 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { room, toggleOutgoingMic, destroyRoom } from "@/util/zoolana/room";
+import {
+  room,
+  toggleOutgoingMic,
+  destroyRoom,
+  toggleIsIncomingAudioMuted
+} from "@/util/zoolana/room";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
@@ -118,7 +168,9 @@ export default defineComponent({
       theirVideo,
       toggleOutgoingMic,
       onEndCall,
-      isMuted: room.isMuted
+      isMuted: room.isMuted,
+      isIncomingAudioMuted: room.isIncomingAudioMuted,
+      toggleIsIncomingAudioMuted
     };
   }
 });
